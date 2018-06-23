@@ -17,6 +17,7 @@ public class GameSystem : MonoBehaviour {
     private List<float> LastValues = new List<float>();
 
     private int GeneratedWorlds = 0;
+    private int Upvotes = 0;
 
     private void Start() {
         EntityManager EntityManager = World.Active.GetOrCreateManager<EntityManager>();
@@ -31,8 +32,10 @@ public class GameSystem : MonoBehaviour {
             UIController.HideTutorial1();
             LastValues = new List<float>(Values);
             UIController.SetSavedBars(LastValues);
+            Upvotes++;
         }
         if (Input.GetButtonDown("Reset Upvote")) {
+            UIController.HideTutorial2();
             LastValues.Clear();
             UIController.DiscardSavedValues();
         }
@@ -42,6 +45,9 @@ public class GameSystem : MonoBehaviour {
             GeneratedWorlds++;
             if (GeneratedWorlds > 2) {
                 UIController.ShowTutorial1();
+            }
+            if (GeneratedWorlds > 4 && Upvotes > 1) {
+                UIController.ShowTutorial2();
             }
         }
     }
@@ -77,7 +83,7 @@ public class GameSystem : MonoBehaviour {
         for (int i = 0; i < 7; i++) {
             Values.Add(ApplyGenes(Random.value));
         }
-        UIController.SetCurrentBars(Values);
+        UIController.SetCurrentBars(Values, LastValues);
 
         int s = 50;
         for (int x = 0; x < s; x++) {
