@@ -357,7 +357,7 @@ MonoBehaviour:
   Zoom: 3
   ZoomSpeed: 3
   MinZoom: -5
-  MaxZoom: 5
+  MaxZoom: 6
   ZoomBase: 1.1
 --- !u!1 &475736592
 GameObject:
