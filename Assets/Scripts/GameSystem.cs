@@ -5,16 +5,18 @@ using Unity.Rendering;
 using Unity.Transforms;
 using Unity.Mathematics;
 
-public class ECSBootstrap : MonoBehaviour {
+public class GameSystem : MonoBehaviour {
     public MeshInstanceRendererComponent SandMesh;
+    public UIController UIController;
 
     private EntityArchetype SandArchetype;
     private MeshInstanceRenderer SandRenderer;
     private List<Entity> Entities = new List<Entity>();
 
     private List<float> Values = new List<float>();
-
     private List<float> LastValues = new List<float>();
+
+    private int GeneratedWorlds = 0;
 
     private void Start() {
         EntityManager EntityManager = World.Active.GetOrCreateManager<EntityManager>();
@@ -26,21 +28,29 @@ public class ECSBootstrap : MonoBehaviour {
 
     private void Update() {
         if (Input.GetButtonDown("Upvote") && Values.Count > 0) {
+            UIController.HideTutorial1();
             LastValues = new List<float>(Values);
+            UIController.SetSavedBars(LastValues);
         }
         if (Input.GetButtonDown("Reset Upvote")) {
             LastValues.Clear();
+            UIController.DiscardSavedValues();
         }
         if (Input.GetButtonDown("Generate World")) {
             CreateWorld();
+            UIController.HideTutorial0();
+            GeneratedWorlds++;
+            if (GeneratedWorlds > 2) {
+                UIController.ShowTutorial1();
+            }
         }
     }
 
-    private float ApplyGenes(float initialVal, float midPoint) {
+    private float ApplyGenes(float initialVal) {
         if (LastValues.Count > 0) {
-            float GeneValue = LastValues[Values.Count] - midPoint;
-            float NewValue = initialVal - midPoint;
-            return NewValue + GeneValue + midPoint;
+            float GeneValue = LastValues[Values.Count] - 0.5f;
+            float NewValue = initialVal - 0.5f;
+            return (NewValue + GeneValue) / 2f + 0.5f;
         } else {
             return initialVal;
         }
@@ -55,13 +65,19 @@ public class ECSBootstrap : MonoBehaviour {
         Entities.Clear();
 
         Values.Clear();
-        Values.Add(ApplyGenes(Random.value, 0.5f)); // 0: Crater Strength
-        Values.Add(ApplyGenes(Random.value, 0.5f)); // 1: Crater Size
-        Values.Add(ApplyGenes(Random.value, 0.5f)); // 2: Crater Noisyness
-        Values.Add(ApplyGenes(Random.value * 5 + 3, 5.5f)); // 3: Wall Width
-        Values.Add(ApplyGenes(Mathf.Max(0, Random.value * 5 - 2), 0.5f)); // 4: Wall Height
-        Values.Add(ApplyGenes(Random.value * 7 + 8, 11.5f)); // 5: Wall Radius
-        Values.Add(ApplyGenes(Random.value * 4 + 1, 3f)); // 6: Wall Tower Height
+        /* What the indices will change:
+         * 0: Crater Strength
+         * 1: Crater Size
+         * 2: Crater Noisyness
+         * 3: Wall Width
+         * 4: Wall Height
+         * 5: Wall Radius
+         * 6: Wall Tower Height
+         */
+        for (int i = 0; i < 7; i++) {
+            Values.Add(ApplyGenes(Random.value));
+        }
+        UIController.SetCurrentBars(Values);
 
         int s = 50;
         for (int x = 0; x < s; x++) {
@@ -74,15 +90,17 @@ public class ECSBootstrap : MonoBehaviour {
                 // Craters
                 Height += (r - Mathf.Min(r, Mathf.Abs(Dist - r))) * Values[0] * (1 + Mathf.PerlinNoise(x_ * 0.2f, z_ * 0.2f) * Values[2]);
                 // Walls
-                bool insideWallX = Mathf.Abs(x_) < Values[5] + Values[3] / 2;
-                bool insideWallZ = Mathf.Abs(z_) < Values[5] + Values[3] / 2;
-                bool xWall = insideWallX && Mathf.Abs(x_) > Values[5] - Values[3] / 2;
-                bool zWall = insideWallZ && Mathf.Abs(z_) > Values[5] - Values[3] / 2;
+                float WallHalfWidth = (Values[3] * 5 + 3) / 2f;
+                float WallRadius = Values[5] * 7 + 8;
+                bool insideWallX = Mathf.Abs(x_) < WallRadius + WallHalfWidth;
+                bool insideWallZ = Mathf.Abs(z_) < WallRadius + WallHalfWidth;
+                bool xWall = insideWallX && Mathf.Abs(x_) > WallRadius - WallHalfWidth;
+                bool zWall = insideWallZ && Mathf.Abs(z_) > WallRadius - WallHalfWidth;
                 if ((xWall || zWall) && insideWallX && insideWallZ) {
-                    Height += Values[4];
+                    Height += Mathf.Max(0, Values[4] * 5 - 2);
                 }
                 if (xWall && zWall && Values[4] > 1.5) {
-                    Height += Values[6];
+                    Height += Values[6] * 4 + 1;
                 }
 
                 for (int y = 0; y < Height; y++) {

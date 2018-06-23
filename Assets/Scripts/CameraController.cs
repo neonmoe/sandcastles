@@ -17,8 +17,8 @@ public class CameraController : MonoBehaviour {
 
     private float TargetHorizontalRotation = 60;
     private float HorizontalRotation = 0;
-    private float TargetVerticalRotation = 60;
-    private float VerticalRotation = 0;
+    private float TargetVerticalRotation = -40;
+    private float VerticalRotation = -40;
 
     private void Update() {
         float HorizontalRotationDelta = 0;
