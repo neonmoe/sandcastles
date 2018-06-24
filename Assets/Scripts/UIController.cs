@@ -47,7 +47,7 @@ public class UIController : MonoBehaviour {
 				Pivot.x = 1 - Pivot.x;
 				Transform.pivot = Transform.pivot = Pivot;
 			}
-			MinHeight = 5;
+			MinHeight = 0;
 			MaxHeight = Transform.rect.height;
 			Transform.anchoredPosition = position;
 			Transform.offsetMax += new Vector2(5, 0) * (rightAligned ? 2 : 1);
@@ -172,7 +172,7 @@ public class UIController : MonoBehaviour {
 
 	public void SetCurrentBars(List<float> values, List<float> baseValues) {
 		for (int i = 0; i < values.Count; i++) {
-			SetBar(CurrentBars, i, values.Count, 30, false, LeftParent, values[i], i >= baseValues.Count ? values[i] : baseValues[i]);
+			SetBar(CurrentBars, i, values.Count, 30, false, LeftParent, values[i], i >= baseValues.Count ? 0 : baseValues[i]);
 		}
 		LeftScale.Set(1);
 	}

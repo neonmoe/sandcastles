@@ -31,6 +31,7 @@ public class GameSystem : MonoBehaviour {
         if (Input.GetButtonDown("Upvote") && Values.Count > 0) {
             UIController.HideTutorial1();
             LastValues = new List<float>(Values);
+            UIController.SetCurrentBars(Values, LastValues);
             UIController.SetSavedBars(LastValues);
             Upvotes++;
         }
